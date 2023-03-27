@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.get("/", checkAdminToken, (req, res) => {
   Log.find({})
-    .populate(["department", "user", "employee"])
+    .populate("user", "email")
+    .populate(["department", "employee"])
     .then((logs) => {
       res.status(200).send(logs);
     });
@@ -16,7 +17,8 @@ router.get("/", checkAdminToken, (req, res) => {
 router.get("/:id", checkAdminToken, (req, res) => {
   const id = req.params.id;
   Log.findById(id)
-    .populate(["department", "user", "employee"])
+    .populate("user", "email")
+    .populate(["department", "employee"])
     .then((log) => {
       res.status(200).send(log);
     });
