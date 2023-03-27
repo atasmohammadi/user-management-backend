@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const transform = require("../utils/transformSchema");
+const Department = require("./Department");
 
 const userSchema = new mongoose.Schema({
   firstName: String,
@@ -13,5 +14,15 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.options.toJSON = transform;
+
+userSchema.path("department").validate(async (departmentId) => {
+  try {
+    const department = await Department.findById(departmentId);
+    if (!department) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
+});
 
 module.exports = mongoose.model("Employee", userSchema);
