@@ -7,16 +7,20 @@ const { checkToken, checkTokenAdmin } = require("../middleware/checkToken");
 const router = express.Router();
 
 router.get("/", checkToken, (req, res) => {
-  Employee.find({}).then((employees) => {
-    res.sendStatus(200).send(employees);
-  });
+  Employee.find({})
+    .populate("department")
+    .then((employees) => {
+      res.sendStatus(200).send(employees);
+    });
 });
 
 router.get("/:id", checkToken, (req, res) => {
   const id = req.params.id;
-  Employee.findById(id).then((employee) => {
-    res.sendStatus(200).send(employee);
-  });
+  Employee.findById(id)
+    .populate("department")
+    .then((employee) => {
+      res.sendStatus(200).send(employee);
+    });
 });
 
 router.post("/", checkTokenAdmin, async ({ body, user }, res) => {
