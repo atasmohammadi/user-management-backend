@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   password: String,
   email: String,
   permissions: [],
-  token: String,
 });
 
 userSchema.options.toJSON = transform;

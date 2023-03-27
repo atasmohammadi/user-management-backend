@@ -1,35 +1,35 @@
 const express = require("express");
 
 const Department = require("../models/Department");
-const { checkTokenAdmin } = require("../middleware/checkToken");
+const { checkAdminToken } = require("../middlewares/checkToken");
 
 const router = express.Router();
 
-router.get("/", checkTokenAdmin, (req, res) => {
+router.get("/", checkAdminToken, (req, res) => {
   Department.find({}).then((departments) => {
-    res.sendStatus(200).send(departments);
+    res.status(200).send(departments);
   });
 });
 
-router.get("/:id", checkTokenAdmin, (req, res) => {
+router.get("/:id", checkAdminToken, (req, res) => {
   const id = req.params.id;
   Department.findById(id).then((department) => {
-    res.sendStatus(200).send(department);
+    res.status(200).send(department);
   });
 });
 
-router.post("/", checkTokenAdmin, async ({ body, user }, res) => {
+router.post("/", checkAdminToken, async ({ body, user }, res) => {
   const { name } = body;
 
   try {
     if (!name) {
-      return res.sendStatus(400).send({ message: "all fields are required" });
+      return res.status(400).send({ message: "all fields are required" });
     }
 
     const department = await Department.findOne({ name }).exec();
 
     if (department) {
-      return res.sendStatus(409).send({ message: "Department already exists" });
+      return res.status(409).send({ message: "Department already exists" });
     }
 
     const newDepartment = new Department({
@@ -38,24 +38,25 @@ router.post("/", checkTokenAdmin, async ({ body, user }, res) => {
     const createdDepartment = await newDepartment.save();
     const createdDepartmentJSON = createdDepartment.toJSON();
 
-    res.sendStatus(201).send(createdDepartmentJSON);
+    res.status(201).send(createdDepartmentJSON);
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    console.log(err);
+    res.status(500).send({ message: err });
   }
 });
 
-router.put("/", checkTokenAdmin, async ({ body, user }, res) => {
+router.put("/", checkAdminToken, async ({ body, user }, res) => {
   const { id, name } = body;
 
   try {
     if (!name) {
-      return res.sendStatus(400).send({ message: "all fields are required" });
+      return res.status(400).send({ message: "all fields are required" });
     }
 
     const department = await Department.findById(id).exec();
 
     if (!department) {
-      return res.sendStatus(404).send({ message: "Department not found" });
+      return res.status(404).send({ message: "Department not found" });
     }
 
     const { id: _, ...rest } = foundAdmin.toJSON();
@@ -64,9 +65,9 @@ router.put("/", checkTokenAdmin, async ({ body, user }, res) => {
       name: name || rest.name,
     });
 
-    return res.sendStatus(200).send({ message: "Department updated" });
+    return res.status(200).send({ message: "Department updated" });
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    res.status(500).send({ message: err });
   }
 });
 module.exports = router;

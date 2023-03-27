@@ -2,7 +2,7 @@ const express = require("express");
 
 const Employee = require("../models/Employee");
 const Log = require("../models/Log");
-const { checkToken, checkTokenAdmin } = require("../middleware/checkToken");
+const { checkToken, checkAdminToken } = require("../middlewares/checkToken");
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.get("/", checkToken, (req, res) => {
   Employee.find({})
     .populate("department")
     .then((employees) => {
-      res.sendStatus(200).send(employees);
+      res.status(200).send(employees);
     });
 });
 
@@ -19,22 +19,22 @@ router.get("/:id", checkToken, (req, res) => {
   Employee.findById(id)
     .populate("department")
     .then((employee) => {
-      res.sendStatus(200).send(employee);
+      res.status(200).send(employee);
     });
 });
 
-router.post("/", checkTokenAdmin, async ({ body, user }, res) => {
+router.post("/", checkAdminToken, async ({ body, user }, res) => {
   const { firstName, lastName, address, jobTitle, department } = body;
 
   try {
     if (!firstName || !lastName || !address || !jobTitle || !department) {
-      return res.sendStatus(400).send({ message: "all fields are required" });
+      return res.status(400).send({ message: "all fields are required" });
     }
 
     const employee = await Employee.findOne({ firstName, lastName }).exec();
 
     if (employee) {
-      return res.sendStatus(409).send({ message: "Employee already exists" });
+      return res.status(409).send({ message: "Employee already exists" });
     }
 
     const newEmployee = new Employee({
@@ -56,24 +56,24 @@ router.post("/", checkTokenAdmin, async ({ body, user }, res) => {
     });
     await newLog.save();
 
-    res.sendStatus(201).send(createdEmployeeJSON);
+    res.status(201).send(createdEmployeeJSON);
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    res.status(500).send({ message: err });
   }
 });
 
-router.put("/", checkTokenAdmin, async ({ body, user }, res) => {
+router.put("/", checkAdminToken, async ({ body, user }, res) => {
   const { id, firstName, lastName, address, jobTitle, department } = body;
 
   try {
     if (!firstName || !lastName || !address || !jobTitle || !department) {
-      return res.sendStatus(400).send({ message: "all fields are required" });
+      return res.status(400).send({ message: "all fields are required" });
     }
 
     const employee = await Employee.findById(id).exec();
 
     if (!employee) {
-      return res.sendStatus(404).send({ message: "Employee not found" });
+      return res.status(404).send({ message: "Employee not found" });
     }
 
     const { id: _, ...rest } = foundAdmin.toJSON();
@@ -95,9 +95,9 @@ router.put("/", checkTokenAdmin, async ({ body, user }, res) => {
     });
     await newLog.save();
 
-    return res.sendStatus(200).send({ message: "Employee updated" });
+    return res.status(200).send({ message: "Employee updated" });
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    res.status(500).send({ message: err });
   }
 });
 module.exports = router;

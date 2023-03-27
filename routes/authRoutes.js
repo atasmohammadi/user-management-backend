@@ -13,14 +13,14 @@ router.post("/register", async ({ body }, res) => {
   const { password, email } = body;
 
   try {
-    if (!email) {
-      return res.sendStatus(400).send({ message: "Email is required" });
+    if (!email || !password) {
+      return res.status(400).send({ message: "All fields are required" });
     }
 
     const user = await User.findOne({ email }).exec();
 
     if (user) {
-      return res.sendStatus(409).send({ message: "User already exists" });
+      return res.status(409).send({ message: "User already exists" });
     }
 
     const newUserData = {
@@ -32,14 +32,14 @@ router.post("/register", async ({ body }, res) => {
     const hash = await bcrypt.hash(password, salt);
 
     newUserData.password = hash;
-    newUserData.token = generateToken(username);
+    const token = generateToken(email);
 
     const newUser = new User(newUserData);
     const createdUser = await newUser.save();
 
-    res.sendStatus(201).send({ ...createdUser.toJSON() });
+    res.status(201).send({ ...createdUser.toJSON(), token });
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    res.status(500).send({ message: err });
   }
 });
 
@@ -50,7 +50,7 @@ router.post("/login", async ({ body }, res) => {
     const existingUser = await User.findOne({ email }).exec();
 
     if (!existingUser) {
-      return res.sendStatus(401).send({ message: "Invalid credentials" });
+      return res.status(401).send({ message: "Invalid credentials" });
     }
 
     const correctPassword = await bcrypt.compare(
@@ -59,12 +59,14 @@ router.post("/login", async ({ body }, res) => {
     );
 
     if (!correctPassword) {
-      return res.sendStatus(401).send({ message: "Invalid credentials" });
+      return res.status(401).send({ message: "Invalid credentials" });
     }
 
-    return res.sendStatus(200).send({ ...existingUser.toJSON() });
+    const token = generateToken(email);
+
+    return res.status(200).send({ ...existingUser.toJSON(), token });
   } catch (err) {
-    res.sendStatus(500).send({ message: err });
+    res.status(500).send({ message: err });
   }
 });
 

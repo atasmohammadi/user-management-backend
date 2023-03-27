@@ -1,24 +1,24 @@
 const express = require("express");
 
 const Log = require("../models/Log");
-const { checkTokenAdmin } = require("../middleware/checkToken");
+const { checkAdminToken } = require("../middlewares/checkToken");
 
 const router = express.Router();
 
-router.get("/", checkTokenAdmin, (req, res) => {
+router.get("/", checkAdminToken, (req, res) => {
   Log.find({})
     .populate(["department", "user", "employee"])
     .then((logs) => {
-      res.sendStatus(200).send(logs);
+      res.status(200).send(logs);
     });
 });
 
-router.get("/:id", checkTokenAdmin, (req, res) => {
+router.get("/:id", checkAdminToken, (req, res) => {
   const id = req.params.id;
   Log.findById(id)
     .populate(["department", "user", "employee"])
     .then((log) => {
-      res.sendStatus(200).send(log);
+      res.status(200).send(log);
     });
 });
 
