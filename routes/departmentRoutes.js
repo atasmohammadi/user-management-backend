@@ -45,8 +45,17 @@ router.post("/", checkAdminToken, async ({ body, user }, res) => {
   }
 });
 
-router.put("/", checkAdminToken, async ({ body, user }, res) => {
-  const { id, name } = body;
+router.delete("/:id", checkAdminToken, (req, res) => {
+  const id = req.params.id;
+  Department.findById(id).then(async (department) => {
+    await department.deleteOne();
+
+    return res.status(200).send({ message: "Department deleted" });
+  });
+});
+
+router.put("/", checkAdminToken, async (req, res) => {
+  const { id, name } = req.body;
 
   try {
     if (!name) {
@@ -59,7 +68,7 @@ router.put("/", checkAdminToken, async ({ body, user }, res) => {
       return res.status(404).send({ message: "Department not found" });
     }
 
-    const { id: _, ...rest } = foundAdmin.toJSON();
+    const { id: _, ...rest } = department.toJSON();
     await department.replaceOne({
       ...rest,
       name: name || rest.name,

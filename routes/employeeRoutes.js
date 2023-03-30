@@ -76,7 +76,7 @@ router.put("/", checkAdminToken, async ({ body, user }, res) => {
       return res.status(404).send({ message: "Employee not found" });
     }
 
-    const { id: _, ...rest } = foundAdmin.toJSON();
+    const { id: _, ...rest } = employee.toJSON();
     await employee.replaceOne({
       ...rest,
       firstName: firstName || rest.firstName,
@@ -100,4 +100,23 @@ router.put("/", checkAdminToken, async ({ body, user }, res) => {
     res.status(500).send({ message: err });
   }
 });
+
+router.delete("/:id", checkAdminToken, (req, res) => {
+  const id = req.params.id;
+  Employee.findById(id).then(async (employee) => {
+    const newLog = new Log({
+      time: Date.now(),
+      user: req.user.id,
+      employee: id,
+      action: `Delete Employee`,
+      department: employee.department,
+    });
+
+    await employee.deleteOne();
+    await newLog.save();
+
+    return res.status(200).send({ message: "Employee deleted" });
+  });
+});
+
 module.exports = router;

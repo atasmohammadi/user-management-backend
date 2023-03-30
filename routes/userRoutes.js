@@ -18,26 +18,31 @@ router.get("/:id", checkAdminToken, (req, res) => {
   });
 });
 
-router.put("/", checkAdminToken, async ({ body }, res) => {
-  const { id, permissions } = body;
+router.delete("/:id", checkAdminToken, (req, res) => {
+  const id = req.params.id;
+  User.findById(id).then(async (user) => {
+    await user.deleteOne();
+
+    return res.status(200).send({ message: "User deleted" });
+  });
+});
+
+router.put("/", checkAdminToken, async (req, res) => {
+  const { id, permissions } = req.body;
 
   try {
     if (!permissions) {
       return res.status(400).send({ message: "all fields are required" });
     }
-
     const user = await User.findById(id).exec();
-
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-
-    const { id: _, ...rest } = foundAdmin.toJSON();
+    const { id: _, ...rest } = user.toJSON();
     await user.replaceOne({
       ...rest,
       permissions: permissions || rest.permissions,
     });
-
     return res.status(200).send({ message: "User updated" });
   } catch (err) {
     res.status(500).send({ message: err });

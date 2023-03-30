@@ -64,7 +64,9 @@ router.post("/login", async ({ body }, res) => {
 
     const token = generateToken(email);
 
-    return res.status(200).send({ ...existingUser.toJSON(), token });
+    const { id, permissions } = existingUser.toJSON();
+
+    return res.status(200).send({ id, permissions, email, token });
   } catch (err) {
     res.status(500).send({ message: err });
   }
