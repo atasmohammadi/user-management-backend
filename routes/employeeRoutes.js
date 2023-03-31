@@ -62,6 +62,46 @@ router.post("/", checkAdminToken, async ({ body, user }, res) => {
   }
 });
 
+router.post("/batch", checkAdminToken, async ({ body, user }, res) => {
+  const { employees } = body;
+
+  try {
+    if (!employees) {
+      return res.status(400).send({ message: "all fields are required" });
+    }
+
+    const docs = await Employee.insertMany(employees);
+    return res.status(201).send(docs);
+
+    // const employee = await Employee.findOne({ firstName, lastName }).exec();
+
+    // if (employee) {
+    //   return res.status(409).send({ message: "Employee already exists" });
+    // }
+
+    // const newEmployee = new Employee({
+    //   firstName,
+    //   lastName,
+    //   address,
+    //   jobTitle,
+    //   department,
+    // });
+    // const createdEmployee = await newEmployee.save();
+    // const createdEmployeeJSON = createdEmployee.toJSON();
+
+    // const newLog = new Log({
+    //   time: Date.now(),
+    //   user: user.id,
+    //   employee: createdEmployeeJSON.id,
+    //   action: "Create Employee",
+    //   department,
+    // });
+    // await newLog.save();
+  } catch (err) {
+    res.status(500).send({ message: err });
+  }
+});
+
 router.put("/", checkAdminToken, async ({ body, user }, res) => {
   const { id, firstName, lastName, address, jobTitle, department } = body;
 

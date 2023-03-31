@@ -1,17 +1,17 @@
 const express = require("express");
 
 const Department = require("../models/Department");
-const { checkAdminToken } = require("../middlewares/checkToken");
+const { checkAdminToken, checkToken } = require("../middlewares/checkToken");
 
 const router = express.Router();
 
-router.get("/", checkAdminToken, (req, res) => {
+router.get("/", checkToken, (req, res) => {
   Department.find({}).then((departments) => {
     res.status(200).send(departments);
   });
 });
 
-router.get("/:id", checkAdminToken, (req, res) => {
+router.get("/:id", checkToken, (req, res) => {
   const id = req.params.id;
   Department.findById(id).then((department) => {
     res.status(200).send(department);
@@ -41,6 +41,19 @@ router.post("/", checkAdminToken, async ({ body, user }, res) => {
     res.status(201).send(createdDepartmentJSON);
   } catch (err) {
     console.log(err);
+    res.status(500).send({ message: err });
+  }
+});
+
+router.post("/batch", checkAdminToken, async ({ body, user }, res) => {
+  const { departments } = body;
+  try {
+    if (!departments) {
+      return res.status(400).send({ message: "all fields are required" });
+    }
+    const docs = await Department.insertMany(departments);
+    return res.status(201).send(docs.map((d) => d.toJSON()));
+  } catch (err) {
     res.status(500).send({ message: err });
   }
 });
