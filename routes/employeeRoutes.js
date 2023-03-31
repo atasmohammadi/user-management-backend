@@ -71,32 +71,16 @@ router.post("/batch", checkAdminToken, async ({ body, user }, res) => {
     }
 
     const docs = await Employee.insertMany(employees);
+    await Log.insertMany(
+      docs.map((emp) => ({
+        time: Date.now(),
+        user: user.id,
+        employee: emp._id,
+        action: "Create Employee",
+        department: emp.department,
+      }))
+    );
     return res.status(201).send(docs);
-
-    // const employee = await Employee.findOne({ firstName, lastName }).exec();
-
-    // if (employee) {
-    //   return res.status(409).send({ message: "Employee already exists" });
-    // }
-
-    // const newEmployee = new Employee({
-    //   firstName,
-    //   lastName,
-    //   address,
-    //   jobTitle,
-    //   department,
-    // });
-    // const createdEmployee = await newEmployee.save();
-    // const createdEmployeeJSON = createdEmployee.toJSON();
-
-    // const newLog = new Log({
-    //   time: Date.now(),
-    //   user: user.id,
-    //   employee: createdEmployeeJSON.id,
-    //   action: "Create Employee",
-    //   department,
-    // });
-    // await newLog.save();
   } catch (err) {
     res.status(500).send({ message: err });
   }
@@ -151,9 +135,8 @@ router.delete("/:id", checkAdminToken, (req, res) => {
       action: `Delete Employee`,
       department: employee.department,
     });
-
-    await employee.deleteOne();
     await newLog.save();
+    await employee.deleteOne();
 
     return res.status(200).send({ message: "Employee deleted" });
   });
